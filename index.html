@@ -1,0 +1,1605 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="简洁高效的书签导航网站，帮助您快速访问常用网站">
+  <title>书签导航</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    :root {
+      --primary-color: #3498db;
+      --secondary-color: #2980b9;
+      --accent-color: #e74c3c;
+      --background-color: #f5f7fa;
+      --card-bg: #ffffff;
+      --text-color: #333;
+      --shadow: 0 4px 6px rgba(0,0,0,0.08);
+      --transition: all 0.3s ease;
+      --border-radius: 12px;
+      --icon-size: 48px;
+      --category-icon-size: 36px;
+    }
+
+    /* 暗色模式变量 */
+    :root.dark-mode {
+      --primary-color: #4da6ff;
+      --secondary-color: #0077e6;
+      --accent-color: #ff6b6b;
+      --background-color: #1a1a2e;
+      --card-bg: #16213e;
+      --text-color: #e6e6e6;
+      --shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
+    
+    body {
+      font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      line-height: 1.6;
+      color: var(--text-color);
+      background-color: var(--background-color);
+      padding: 10px;
+      max-width: 1600px;
+      margin: 0 auto;
+      transition: background-color 0.3s ease;
+    }
+    
+    /* 导航栏样式 */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 15px;
+      background: var(--card-bg);
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+      margin-bottom: 6px;
+      position: sticky;
+      top: 10px;
+      z-index: 1000;
+    }
+    
+    .navbar-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .navbar-title {
+      font-size: 1.2em;
+      font-weight: 600;
+      color: var(--text-color);
+    }
+    
+    .navbar-center {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+    }
+    
+    .search-container {
+      position: relative;
+      max-width: 500px;
+      width: 100%;
+    }
+    
+    .search-box {
+      width: 100%;
+      padding: 8px 15px 8px 40px;
+      border: 1px solid #e0e3e9;
+      border-radius: 20px;
+      font-size: 14px;
+      box-shadow: var(--shadow);
+      transition: var(--transition);
+      background-color: var(--card-bg);
+      color:极 var(--text-color);
+    }
+    
+    .search-box:focus {
+      box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+      outline: none;
+      border-color: var(--primary-color);
+    }
+    
+    .search-container i {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #888;
+    }
+    
+    .navbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    /* 汉堡菜单按钮 */
+    .hamburger {
+      display: none;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--text-color);
+      outline: none;
+    }
+    
+    /* 移动菜单 */
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      top: 65px;
+      left: 0;
+      right: 0;
+      background: var(--card-bg);
+      z-index: 999;
+      padding: 12px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      border-radius: 0 0 var(--border-radius) var(--border-radius);
+    }
+    
+    .mobile-menu.active {
+      display: block;
+    }
+    
+    .mobile-search-container {
+      position: relative;
+      margin-bottom: 12px;
+    }
+    
+    .mobile-search-box {
+      width: 100%;
+      padding: 10px 15px 10px 45px;
+      border: 1px solid #e0e3e9;
+      border-radius: 20px;
+      font-size: 14px;
+      background-color: var(--card-bg);
+      color: var(--text-color);
+    }
+    
+    .mobile-search-container i {
+      position: absolute;
+      left: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #888;
+    }
+    
+    .mobile-theme-toggle {
+      background: none;
+      border: none;
+      font-size: 1.3rem;
+      cursor: pointer;
+      color: var(--text极-color);
+      outline: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+    }
+    
+    .mobile-theme-toggle:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    
+    /* 分类导航栏 */
+    .category-nav {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+      position: sticky;
+      top: 65px;
+      z-index: 900;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 8px;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+    }
+    
+    .dark-mode .category-nav {
+      background: rgba(22, 33, 62, 0.95);
+    }
+    
+    .category-btn {
+      padding: 5px 10px;
+      background: var(--card-bg);
+      color: var(--text-color);
+      border: 1px solid rgba(0,0,0,0.1);
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+      font-weight: 500;
+    }
+    
+    .category-btn:hover, .category-btn.active {
+      background: var(--primary-color);
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+      border-color: var(--primary-color);
+    }
+    
+    .category-btn i {
+      font-size: 11px;
+    }
+    
+    /* 暗色模式切换按钮 */
+    .theme-toggle {
+      background: none;
+      border: none;
+      font-size: 1.3rem;
+      cursor: pointer;
+      color: var(--text-color);
+      outline: none;
+      transition: transform 0.3s ease;
+    }
+    
+    .theme-toggle:hover {
+      transform: rotate(15deg) scale(1.1);
+    }
+    
+    .category-section {
+      margin-bottom: 24px;
+      background: var(--card-bg);
+      border-radius: var(--border-radius);
+      padding: 12px 15px;
+      box-shadow: var(--shadow);
+      transition: var(--transition);
+      position: relative;
+      border-left: 5px solid;
+    }
+    
+    /* 分类边框颜色 */
+    .category-section.search { border-left-color: #3498db; }
+    .category-section.social { border-left-color: #e74c3c; }
+    .category-section.dev { border-left-color: #2ecc71; }
+    .category-section.tools { border-left-color: #f39c12; }
+    .category-section.media { border-left-color: #9b59b6; }
+    .category-section.news { border-left-color: #e67e22; }
+    .category-section.shopping { border-left-color: #d35400; }
+    .category-section.education { border-left-color: #27ae60; }
+    .category-section.travel { border-left-color: #2980b9; }
+    .category-section.finance { border-left-color: #8e44ad; }
+    .category-section.health { border-left-color: #16a085; }
+    .category-section.food { border-left-color: #c0392b; }
+    .category-section.sports { border-left-color: #f1c40f; }
+    .category-section.games { border-left-color: #9b59b6; }
+    .category-section.art { border-left-color: #e74c3c; }
+    .category-section.music { border-left-color: #3498db; }
+    .category-section.books { border-left-color: #2ecc71; }
+    .category-section.tech { border-left-color: #34495e; }
+    .category-section.photography { border-left-color: #d35400; }
+    .category-section.design { border-left-color: #9b59b6; }
+    
+    .category-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+    }
+    
+    .dark-mode .category-header {
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .category-title {
+      font-size: 1.2em;
+      color: var(--text-color);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
+    }
+    
+    .bookmarks-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
+      gap: 15px;
+      transition: var(--transition);
+    }
+    
+    .bookmark-card {
+      background: var(--card-bg);
+      border-radius: var(--border-radius);
+      padding: 15px;
+      box-shadow: var(--shadow);
+      transition: var(--transition);
+      display: flex;
+      align-items: flex-start;
+      min-height: 90px;
+      border: 1px solid rgba(0,0,0,0.05);
+      text-decoration: none !important;
+      overflow: hidden;
+      will-change: transform;
+      contain: content;
+    }
+    
+    .dark-mode .bookmark-card {
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .bookmark-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.12);
+      border-color: rgba(52, 152, 219, 0.3);
+    }
+    
+    .bookmark-icon {
+      width: var(--icon-size);
+      height: var(--icon-size);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 16px;
+      flex-shrink: 0;
+      overflow: hidden;
+      background: rgba(52, 152, 219, 0.1);
+      border: 1px solid rgba(0,0,0,0.05);
+      font-weight: bold;
+      font-size: 22px;
+      color: white;
+    }
+    
+    .bookmark-info {
+      flex: 1;
+      overflow: hidden;
+      min-width: 0;
+    }
+    
+    .bookmark-title {
+      font-weight: 600;
+      font-size: 15px;
+      color: var(--text-color);
+      margin-bottom: 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-decoration: none !important;
+    }
+    
+    .bookmark-desc {
+      color: #666;
+      font-size: 13px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      line-height: 1.5;
+      text-decoration: none !important;
+    }
+    
+    .dark-mode .bookmark-desc {
+      color: #aaa;
+    }
+    
+    /* 优化后的返回顶部按钮 */
+    .back-to-top {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      width: 65px;
+      height: 65px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6em;
+      cursor: pointer;
+      z-index: 200;
+      opacity: 0.92;
+      transform: translateY(10px);
+      animation: pulse 2s infinite;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      color: white;
+      transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+      backdrop-filter: blur(5px);
+      border: none !important;
+    }
+    
+    /* 悬停时缩放和颜色变化 */
+    .back-to-top:hover {
+      transform: translateY(-3px) scale(1.08);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+      opacity: 1;
+      background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+      animation: none;
+    }
+    
+    /* 淡入淡出动画 */
+    .back-to-top.hidden {
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(30px);
+    }
+    
+    /* 脉动动画效果 */
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(41, 128, 185, 0.5);
+      }
+      70% {
+        box-shadow: 0 0 0 12px rgba(41, 128, 185, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(41, 128, 185, 0);
+      }
+    }
+    
+    /* 宽屏布局优化 */
+    @media (min-width: 768px) {
+      .bookmarks-grid {
+        grid-template-columns: repeat(auto-fill, minmax(calc(50% - 10px), 1fr));
+      }
+      
+      .bookmark-card {
+        min-height: 90px;
+        padding: 16px;
+      }
+      
+      :root {
+        --icon-size: 48px;
+      }
+    }
+    
+    @media (min-width: 992px) {
+      .bookmarks-grid {
+        grid-template-columns: repeat(auto-fill, minmax(calc(33.33% - 14px), 1fr));
+      }
+    }
+    
+    @media (min-width: 1200px) {
+      .bookmarks-grid {
+        grid-template-columns: repeat(auto-fill, minmax(calc(25% - 16px), 1fr));
+      }
+      
+      .bookmark-card {
+        padding: 15px;
+      }
+      
+      .bookmark-info {
+        padding-right: 8px;
+      }
+    }
+    
+    @media (min-width: 1600px) {
+      .bookmarks-grid {
+        grid-template-columns: repeat(auto-fill, minmax(calc(20% - 16px), 1fr));
+      }
+    }
+    
+    /* 小屏幕样式 */
+    @media (max-width: 768px) {
+      body {
+        padding: 8px;
+      }
+      
+      .navbar {
+        padding: 6px 12px;
+        margin-bottom: 4px;
+      }
+      
+      .navbar-center {
+        display: none;
+      }
+      
+      .navbar-right .theme-toggle {
+        display: none;
+      }
+      
+      .hamburger {
+        display: flex;
+      }
+      
+      .category-nav {
+        top: 62px;
+        padding: 6px;
+        margin-bottom: 6px;
+      }
+      
+      .bookmark-icon {
+        margin-right: 12px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      body {
+        padding: 5px;
+      }
+      
+      .navbar {
+        padding: 6px 10px;
+      }
+      
+      .navbar-title {
+        font-size: 1.1em;
+      }
+      
+      .category-nav {
+        top: 58px;
+        padding: 4px;
+        gap: 3px;
+      }
+      
+      .category-btn {
+        padding: 4px 8px;
+        font-size: 11px;
+      }
+      
+      /* 小屏幕返回顶部按钮优化 */
+      .back-to-top {
+        width: 55px;
+        height: 55px;
+        bottom: 20px;
+        right: 20px;
+        font-size: 1.4em;
+      }
+    }
+    
+    .scroll-target {
+      position: relative;
+      top: -70px;
+      visibility: hidden;
+    }
+    
+    .no-results {
+      text-align: center;
+      padding: 24px;
+      color: #888;
+      font-style: italic;
+      font-size: 0.9em;
+    }
+    
+    .dark-mode .no-results {
+      color: #aaa;
+    }
+    
+    .loading-indicator {
+      text-align: center;
+      padding: 16px;
+      display: none;
+      font-size: 0.9em;
+    }
+    
+    .highlight {
+      background-color: #fffdd0;
+      font-weight: bold;
+      padding: 0 2px;
+      border-radius: 3px;
+      color: #000;
+    }
+    
+    .dark-mode .highlight {
+      background-color: #ffec8b;
+      color: #000;
+    }
+    
+    .bookmark-card:hover .bookmark-icon {
+      transform: scale(1.05);
+      transition: var(--transition);
+    }
+  </style>
+</head>
+<body>
+  <!-- 导航栏 -->
+  <div class="navbar">
+    <div class="navbar-left">
+      <h1 class="navbar-title"><i class="fas fa-bookmark" aria-hidden="true"></i> 书签导航</h1>
+    </div>
+    
+    <div class="navbar-center">
+      <div class="search-container">
+        <i class="fas fa-search" aria-hidden="true"></i>
+        <input type="text" class="search-box" placeholder="搜索书签..." id="searchInput" aria-label="搜索书签">
+      </div>
+    </div>
+    
+    <div class="navbar-right">
+      <button id="themeToggle" class="theme-toggle" aria-label="切换暗色模式">
+        <i class="fas fa-moon"></i>
+      </button>
+      <button class="hamburger" id="hamburgerMenu" aria-label="菜单">
+        <i class="fas fa-bars"></i>
+      </button>
+    </div>
+  </div>
+  
+  <!-- 移动端菜单 -->
+  <div class="mobile-menu" id="mobileMenu">
+    <div class="mobile-search-container">
+      <i class="fas fa-search" aria-hidden="true"></i>
+      <input type="text" class="mobile-search-box" placeholder="搜索书签..." id="mobileSearchInput" aria-label="搜索书签">
+    </div>
+    <button id="mobileThemeToggle" class="mobile-theme-toggle" aria-label="切换暗色模式">
+      <i class="fas fa-moon"></i>
+      <span>切换暗色模式</span>
+    </button>
+  </div>
+  
+  <!-- 分类导航栏 -->
+  <nav class="category-nav" id="categoryNav" aria-label="书签分类"></nav>
+  
+  <div class="loading-indicator" id="loadingIndicator" aria-hidden="true">
+    <i class="fas fa-spinner fa-spin" aria-hidden="true"></i> 正在加载中...
+  </div>
+  
+  <main id="bookmarksContainer"></main>
+  
+  <button class="back-to-top hidden" id="backToTop" aria-label="回到顶部">
+    <i class="fas fa-arrow-up" aria-hidden="true"></i>
+  </button>
+
+  <script>
+    // 修复后的书签数据
+    const bookmarksData = {
+      categories: [
+        {
+          id: 'search',
+          title: '搜索引擎',
+          icon: 'fas fa-search',
+          class: 'search',
+          bookmarks: [
+            { 
+              title: '百度', 
+              url: 'https://www.baidu.com',
+              desc: '中文搜索引擎首选' 
+            },
+            { 
+              title: '搜狗搜索', 
+              url: 'https://www.sogou.com',
+              desc: '精准智能搜索服务' 
+            },
+            { 
+              title: '360搜索', 
+              url: 'https://www.so.com',
+              desc: '安全精准的搜索引擎' 
+            },
+            { 
+              title: '必应中国', 
+              url: 'https://cn.bing.com',
+              desc: '微软提供的搜索引擎' 
+            }
+          ]
+        },
+        {
+          id: 'social',
+          title: '社交平台',
+          icon: 'fas fa-share-alt',
+          class: 'social',
+          bookmarks: [
+            { 
+              title: '微博', 
+              url: 'https://weibo.com',
+              desc: '中文社交媒体平台' 
+            },
+            { 
+              title: '知乎', 
+              url: 'https://www.zhihu.com',
+              desc: '中文问答社区' 
+            },
+            { 
+              title: '豆瓣', 
+              url: 'https://www.douban.com',
+              desc: '图书、影音评论平台' 
+            },
+            { 
+              title: '小红书', 
+              url: 'https://www.xiaohongshu.com',
+              desc: '生活方式分享平台' 
+            }
+          ]
+        },
+        {
+          id: 'dev',
+          title: '开发者资源',
+          icon: 'fas fa-code',
+          class: 'dev',
+          bookmarks: [
+            { 
+              title: 'Gitee', 
+              url: 'https://gitee.com',
+              desc: '开源中国旗下代码托管' 
+            },
+            { 
+              title: 'CSDN', 
+              url: 'https://www.csdn.net',
+              desc: '专业IT技术社区' 
+            },
+            { 
+              title: '掘金', 
+              url: 'https://juejin.cn',
+              desc: '开发者社区和博客平台' 
+            },
+            { 
+              title: '阿里云', 
+              url: 'https://developer.aliyun.com',
+              desc: '阿里开发者门户' 
+            }
+          ]
+        },
+        {
+          id: 'tools',
+          title: '实用工具',
+          icon: 'fas fa-tools',
+          class: 'tools',
+          bookmarks: [
+            { 
+              title: '网易有道', 
+              url: 'https://fanyi.youdao.com',
+              desc: '专业翻译工具极' 
+            },
+            { 
+              title: '腾讯文档', 
+              url: 'https://docs.qq.com',
+              desc: '在线协作办公工具' 
+            },
+            { 
+              title: '百度脑图', 
+              url: 'https://naotu.baidu.com',
+              desc: '在线思维导图工具' 
+            },
+            { 
+              title: '金山文档', 
+              url: 'https://www.wps.cn',
+              desc: '文档办公平台' 
+            }
+          ]
+        },
+        {
+          id: 'media',
+          title: '媒体平台',
+          icon: 'fas fa-video',
+          class: 'media',
+          bookmarks: [
+            { 
+              title: '哔哩哔哩', 
+              url: 'https://www.bilibili.com',
+              desc: '视频弹幕网站' 
+            },
+            { 
+              title: '爱奇艺', 
+              url: 'https://www.iqiyi.com',
+              desc: '网络视频平台' 
+            },
+            { 
+              title: '网易云音乐', 
+              url: 'https://music.163.com',
+              desc: '在线音乐平台' 
+            },
+            { 
+              title: '腾讯视频', 
+              url: 'https://v.qq.com',
+              desc: '网络视频服务平台' 
+            }
+          ]
+        },
+        {
+          id: 'news',
+          title: '新闻资讯',
+          icon: 'fas fa-newspaper',
+          class: 'news',
+          bookmarks: [
+            { 
+              title: '新浪新闻', 
+              url: 'https://news.sina.com.cn',
+              desc: '综合新闻门户' 
+            },
+            { 
+              title: '腾讯新闻', 
+              url: 'https://news.qq.com',
+              desc: '新闻资讯平台' 
+            },
+            { 
+              title: '网易新闻', 
+              url: 'https://news.163.com',
+              desc: '新闻资讯平台' 
+            },
+            { 
+              title: '澎湃新闻', 
+              url: 'https://www.thepaper.cn',
+              desc: '专注时政与思想' 
+            }
+          ]
+        },
+        {
+          id: 'shopping',
+          title: '购物电商',
+          icon: 'fas fa-shopping-cart',
+          class: 'shopping',
+          bookmarks: [
+            { 
+              title: '淘宝', 
+              url: 'https://www.taobao.com',
+              desc: 'C2C电商平台' 
+            },
+            { 
+              title: '京东', 
+              url: 'https://www.jd.com',
+              desc: 'B2C电商平台' 
+            },
+            { 
+              title: '拼多多', 
+              url: 'https://www.pinduoduo.com',
+              desc: '社交电商平台' 
+            },
+            { 
+              title: '天猫', 
+              url: 'https://www.tmall.com',
+              desc: '品牌电商平台' 
+            }
+          ]
+        },
+        {
+          id: 'education',
+          title: '教育学习',
+          icon: 'fas fa-graduation-cap',
+          class: 'education',
+          bookmarks: [
+            { 
+              title: '中国大学MOOC', 
+              url: 'https://www.icourse163.org',
+              desc: '大学课程学习平台' 
+            },
+            { 
+              title: '学堂在线', 
+              url: 'https://www.xuetangx.com',
+              desc: '清华大学MOOC平台' 
+            },
+            { 
+              title: '网易公开课', 
+              url: 'https://open.163.com',
+              desc: '国内外公开课' 
+            },
+            { 
+              title: 'Coursera', 
+              url: 'https://www.coursera.org',
+              desc: '国际在线课程平台' 
+            }
+          ]
+        },
+        {
+          id: 'travel',
+          title: '旅游出行',
+          icon: 'fas fa-plane',
+          class: 'travel',
+          bookmarks: [
+            { 
+              title: '携程', 
+              url: 'https://www.ctrip.com',
+              desc: '在线旅游服务平台' 
+            },
+            { 
+              title: '去哪儿', 
+              url: 'https://www.qunar.com',
+              desc: '旅游搜索平台' 
+            },
+            { 
+              title: '飞猪', 
+              url: 'https://www.fliggy.com',
+              desc: '阿里旗下旅游平台' 
+            },
+            { 
+              title: '马蜂窝', 
+              url: 'https://www.mafengwo.cn',
+              desc: '旅游攻略社区' 
+            }
+          ]
+        },
+        {
+          id: 'finance',
+          title: '金融理财',
+          icon: 'fas fa-chart-line',
+          class: 'finance',
+          bookmarks: [
+            { 
+              title: '支付宝', 
+              url: 'https://www.alipay.com',
+              desc: '移动支付平台' 
+            },
+            { 
+              title: '微信支付', 
+              url: 'https://pay.weixin.qq.com',
+              desc: '移动支付平台' 
+            },
+            { 
+              title: '东方财富', 
+              url: 'https://www.eastmoney.com',
+              desc: '财经门户网站' 
+            },
+            { 
+              title: '同花顺', 
+              url: 'https://www.10jqka.com.cn',
+              desc: '股票行情软件' 
+            }
+          ]
+        },
+        {
+          id: 'health',
+          title: '健康医疗',
+          icon: 'fas fa-heartbeat',
+          class: 'health',
+          bookmarks: [
+            { 
+              title: '丁香医生', 
+              url: 'https://dxy.com',
+              desc: '医疗健康服务平台' 
+            },
+            { 
+              title: '春雨医生', 
+              url: 'https://www.chunyuyisheng.com',
+              desc: '在线医疗咨询' 
+            },
+            { 
+              title: '好大夫在线', 
+              url: 'https://www.haodf.com',
+              desc: '医生预约平台' 
+            },
+            { 
+              title: '微医', 
+              url: 'https://www.guahao.com',
+              desc: '互联网医疗平台' 
+            }
+          ]
+        },
+        {
+          id: 'food',
+          title: '美食餐饮',
+          icon: 'fas fa-utensils',
+          class: 'food',
+          bookmarks: [
+            { 
+              title: '美团', 
+              url: 'https://www.meituan.com',
+              desc: '生活服务平台' 
+            },
+            { 
+              title: '饿了么', 
+              url: 'https://www.ele.me',
+              desc: '外卖订餐平台' 
+            },
+            { 
+              title: '大众点评', 
+              url: 'https://www.dianping.com',
+              desc: '生活消费点评' 
+            },
+            { 
+              title: '下厨房', 
+              url: 'https://www.xiachufang.com',
+              desc: '美食菜谱分享' 
+            }
+          ]
+        },
+        {
+          id: 'sports',
+          title: '体育运动',
+          icon: 'fas fa-running',
+          class: 'sports',
+          bookmarks: [
+            { 
+              title: '虎扑', 
+              url: 'https://www.hupu.com',
+              desc: '体育社区' 
+            },
+            { 
+              title: '懂球帝', 
+              url: 'https://www.dongqiudi.com',
+              desc: '足球资讯平台' 
+            },
+            { 
+              title: '直播吧', 
+              url: 'https://www.zhibo8.cc',
+              desc: '体育赛事直播' 
+            },
+            { 
+              title: 'PP体育', 
+              url: 'https://sports.pptv.com',
+              desc: '体育赛事平台' 
+            }
+          ]
+        },
+        {
+          id: 'games',
+          title: '游戏娱乐',
+          icon: 'fas fa-gamepad',
+          class: 'games',
+          bookmarks: [
+            { 
+              title: 'Steam', 
+              url: 'https://store.steampowered.com',
+              desc: '游戏平台' 
+            },
+            { 
+              title: 'Epic Games', 
+              url: 'https://www.epicgames.com',
+              desc: '游戏平台' 
+            },
+            { 
+              title: '网易游戏', 
+              url: 'https://game.163.com',
+              desc: '游戏平台' 
+            },
+            { 
+              title: '腾讯游戏', 
+              url: 'https://game.qq.com',
+              desc: '游戏平台' 
+            }
+          ]
+        },
+        {
+          id: 'art',
+          title: '艺术设计',
+          icon: 'fas fa-palette',
+          class: 'art',
+          bookmarks: [
+            { 
+              title: '站酷', 
+              url: 'https://www.zcool.com.cn',
+              desc: '设计师社区' 
+            },
+            { 
+              title: '花瓣', 
+              url: 'https://huaban.com',
+              desc: '灵感采集平台' 
+            },
+            { 
+              title: 'Behance', 
+              url: 'https://www.behance.net',
+              desc: '创意设计展示' 
+            },
+            { 
+              title: 'Dribbble', 
+              url: 'https://dribbble.com',
+              desc: '设计师社区' 
+            }
+          ]
+        },
+        {
+          id: 'music',
+          title: '音乐音频',
+          icon: 'fas fa-music',
+          class: 'music',
+          bookmarks: [
+            { 
+              title: 'QQ音乐', 
+              url: 'https://y.qq.com',
+              desc: '音乐流媒体服务' 
+            },
+            { 
+              title: '酷狗音乐', 
+              url: 'https://www.kugou.com',
+              desc: '音乐播放平台' 
+            },
+            { 
+              title: '酷我音乐', 
+              url: 'https://www.kuwo.cn',
+              desc: '音乐播放平台' 
+            },
+            { 
+              title: '虾米音乐', 
+              url: 'https://www.xiami.com',
+              desc: '音乐社区平台' 
+            }
+          ]
+        },
+        {
+          id: 'books',
+          title: '图书阅读',
+          icon: 'fas fa-book',
+          class: 'books',
+          bookmarks: [
+            { 
+              title: '豆瓣读书', 
+              url: 'https://book.douban.com',
+              desc: '图书评论社区' 
+            },
+            { 
+              title: '当当网', 
+              url: 'https://www.dangdang.com',
+              desc: '图书电商平台' 
+            },
+            { 
+              title: '京东读书', 
+              url: 'https://e.jd.com',
+              desc: '电子书平台' 
+            },
+            { 
+              title: '微信读书', 
+              url: 'https://weread.qq.com',
+              desc: '社交化阅读平台' 
+            }
+          ]
+        },
+        {
+          id: 'tech',
+          title: '科技数码',
+          icon: 'fas fa-microchip',
+          class: 'tech',
+          bookmarks: [
+            { 
+              title: '中关村在线', 
+              url: 'https://www.zol.com.cn',
+              desc: '科技产品资讯' 
+            },
+            { 
+              title: '太平洋电脑网', 
+              url: 'https://www.pconline.com.cn',
+              desc: '电脑数码资讯' 
+            },
+            { 
+              title: 'IT之家', 
+              url: 'https://www.ithome.com',
+              desc: '科技资讯网站' 
+            },
+            { 
+              title: 'Engadget', 
+              url: 'https://www.engadget.com',
+              desc: '消费电子产品资讯' 
+            }
+          ]
+        },
+        {
+          id: 'photography',
+          title: '摄影图片',
+          icon: 'fas fa-camera',
+          class: 'photography',
+          bookmarks: [
+            { 
+              title: '图虫', 
+              url: 'https://tuchong.com',
+              desc: '摄影师社区' 
+            },
+            { 
+              title: '500px', 
+              url: 'https://500px.com',
+              desc: '摄影作品分享' 
+            },
+            { 
+              title: 'Unsplash', 
+              url: 'https://unsplash.com',
+              desc: '免费高清图片' 
+            },
+            { 
+              title: 'Pexels', 
+              url: 'https://www.pexels.com',
+              desc: '免费图库' 
+            }
+          ]
+        },
+        {
+          id: 'design',
+          title: '设计资源',
+          icon: 'fas fa-paint-brush',
+          class: 'design',
+          bookmarks: [
+            { 
+              title: 'UI中国', 
+              url: 'https://www.ui.cn',
+              desc: 'UI设计社区' 
+            },
+            { 
+              title: '优设网', 
+              url: 'https://www.uisdc.com',
+              desc: '设计师学习平台' 
+            },
+            { 
+              title: '优优教程网', 
+              url: 'https://uiiiuiii.com',
+              desc: '设计教程平台' 
+            },
+            { 
+              title: 'Figma', 
+              url: 'https://www.figma.com',
+              desc: '协作设计工具' 
+            }
+          ]
+        }
+      ]
+    };
+
+    // 生成书签图标
+    function createBookmarkIcon(title) {
+      const firstChar = title.charAt(0).toUpperCase();
+      const colors = [
+        '#3498db', '#e74c3c', '#2ecc71', '#f39c12', 
+        '#9b59b6', '#1abc9c', '#d35400', '#16a085'
+      ];
+      const colorIndex = (firstChar.charCodeAt(0) + title.length) % colors.length;
+      const bgColor = colors[colorIndex];
+      
+      return {
+        char: firstChar,
+        bgColor: bgColor
+      };
+    }
+
+    // DOM元素引用
+    const bookmarksContainer = document.getElementById('bookmarksContainer');
+    const searchInput = document.getElementById('searchInput');
+    const mobileSearchInput = document.getElementById('mobileSearchInput');
+    const categoryNav = document.getElementById('categoryNav');
+    const backToTop = document.getElementById('backToTop');
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    const themeToggle = document.getElementById('themeToggle');
+    const mobileThemeToggle = document.getElementById('mobileThemeToggle');
+    const hamburgerMenu = document.getElementById('hamburgerMenu');
+    const mobileMenu = document.getElementById('mobileMenu');
+    
+    // 页面初始化完成标志
+    let isInitialized = false;
+    let scrollTimer = null;
+    
+    // 初始化页面
+    function initPage() {
+      // 初始化主题
+      initTheme();
+      
+      // 渲染分类导航
+      renderCategoryNav();
+      
+      // 渲染书签
+      renderBookmarks();
+      
+      // 添加事件监听器
+      searchInput.addEventListener('input', filterBookmarks);
+      mobileSearchInput.addEventListener('input', filterBookmarks);
+      window.addEventListener('scroll', handleScroll);
+      backToTop.addEventListener('click', scrollToTop);
+      themeToggle.addEventListener('click', toggleTheme);
+      mobileThemeToggle.addEventListener('click', toggleTheme);
+      hamburgerMenu.addEventListener('click', toggleMobileMenu);
+      
+      // 设置默认选中的分类
+      if (bookmarksData.categories.length > 0) {
+        const firstCategoryBtn = document.querySelector('.category-btn');
+        if (firstCategoryBtn) {
+          firstCategoryBtn.classList.add('active');
+          firstCategoryBtn.setAttribute('aria-selected', 'true');
+        }
+      }
+      
+      // 初始化返回顶部按钮
+      handleScroll();
+      
+      isInitialized = true;
+    }
+    
+    // 初始化主题设置
+    function initTheme() {
+      const savedTheme = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      
+      if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+        document.documentElement.classList.add('dark-mode');
+        themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+        themeToggle.setAttribute('aria-label', '切换亮色模式');
+        mobileThemeToggle.innerHTML = '<i class="fas fa-sun"></i><span>切换亮色模式</span>';
+      } else {
+        document.documentElement.classList.remove('dark-mode');
+        themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+        themeToggle.setAttribute('aria-label', '切换暗色模式');
+        mobileThemeToggle.innerHTML = '<i class="fas fa-moon"></i><span>切换暗色模式</span>';
+        localStorage.setItem('theme', 'light');
+      }
+    }
+    
+    // 切换主题
+    function toggleTheme() {
+      const html = document.documentElement;
+      const isDarkMode = html.classList.contains('dark-mode');
+      
+      if (isDarkMode) {
+        html.classList.remove('dark-mode');
+        themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+        themeToggle.setAttribute('aria-label', '切换暗色模式');
+        mobileThemeToggle.innerHTML = '<i class="fas fa-moon"></i><span>切换暗色模式</span>';
+        localStorage.setItem('theme', 'light');
+      } else {
+        html.classList.add('dark-mode');
+        themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+        themeToggle.setAttribute('aria-label', '切换亮色模式');
+        mobileThemeToggle.innerHTML = '<i class="fas fa-sun"></i><span>切换亮色模式</span>';
+        localStorage.setItem('theme', 'dark');
+      }
+    }
+    
+    // 切换移动菜单
+    function toggleMobileMenu() {
+      mobileMenu.classList.toggle('active');
+    }
+    
+    // 渲染分类导航
+    function renderCategoryNav() {
+      if (!categoryNav) return;
+      
+      categoryNav.innerHTML = '';
+      
+      bookmarksData.categories.forEach(category => {
+        const categoryBtn = document.createElement('button');
+        categoryBtn.className = 'category-btn';
+        
+        // 使用Font Awesome图标
+        let iconHtml = '';
+        if (category.icon) {
+          iconHtml = `<i class="${category.icon}" aria-hidden="true"></i>`;
+        } else {
+          iconHtml = `<i class="fas fa-folder" aria-hidden="true"></i>`;
+        }
+        
+        categoryBtn.innerHTML = `
+          ${iconHtml}
+          ${category.title}
+        `;
+        
+        categoryBtn.dataset.category = category.id;
+        categoryBtn.setAttribute('role', 'tab');
+        categoryBtn.setAttribute('aria-selected', 'false');
+        
+        categoryBtn.addEventListener('click', () => {
+          scrollToCategory(category.id);
+          
+          // 高亮当前分类按钮
+          document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.classList.remove('active');
+            btn.setAttribute('aria-selected', 'false');
+          });
+          categoryBtn.classList.add('active');
+          categoryBtn.setAttribute('aria-selected', 'true');
+        });
+        
+        categoryNav.appendChild(categoryBtn);
+      });
+    }
+    
+    // 滚动到指定分类
+    function scrollToCategory(categoryId) {
+      const targetElement = document.getElementById(categoryId);
+      if (target极Element) {
+        const targetPosition = targetElement.offsetTop - 80;
+        window.scrollTo({
+          top: targetPosition,
+          behavior: 'smooth'
+        });
+      }
+    }
+    
+    // 渲染书签
+    function renderBookmarks() {
+      if (!bookmarksContainer) return;
+      
+      bookmarksContainer.innerHTML = '';
+      
+      bookmarksData.categories.forEach(category => {
+        const scrollTarget = document.createElement('div');
+        scrollTarget.id = category.id;
+        scrollTarget.className = 'scroll-target';
+        bookmarksContainer.appendChild(scrollTarget);
+        
+        // 使用Font Awesome图标
+        let categoryIconHtml = '';
+        if (category.icon) {
+          categoryIconHtml = `<i class="${category.icon}" aria-hidden="true"></i>`;
+        } else {
+          categoryIconHtml = `<i class="fas fa-folder" aria-hidden="true"></i>`;
+        }
+        
+        const categoryHtml = `
+          <section class="category-section ${category.class}" data-category="${category.id}">
+            <div class="category-header">
+              <h2 class="category-title">
+                ${categoryIconHtml}
+                ${category.title}
+              </h2>
+            </div>
+            <div class="bookmarks-grid" id="grid-${category.id}">
+              ${category.bookmarks.map(bookmark => {
+                const icon = createBookmarkIcon(bookmark.title);
+                return `
+                <a href="${bookmark.url}" class="bookmark-card" target="_blank" rel="noopener" data-url="${bookmark.url}" data-title="${bookmark.title}" aria-label="${bookmark.title} - ${bookmark.desc}">
+                  <div class="bookmark-icon" style="background-color: ${icon.bgColor}">
+                    ${icon.char}
+                  </div>
+                  <div class="bookmark-info">
+                    <h3 class="bookmark-title">${bookmark.title}</h3>
+                    <span class="bookmark-desc">${bookmark.desc}</span>
+                  </div>
+                </a>
+              `}).join('')}
+            </div>
+          </section>
+        `;
+        
+        bookmarksContainer.innerHTML += categoryHtml;
+      });
+    }
+    
+    // 搜索功能
+    function filterBookmarks() {
+      if (!isInitialized) return;
+      
+      const searchTerm = searchInput.value.toLowerCase().trim() || 
+                         mobileSearchInput.value.toLowerCase().trim();
+      
+      // 显示加载指示器
+      if (loadingIndicator) loadingIndicator.style.display = 'block';
+      
+      // 使用requestAnimationFrame优化性能
+      requestAnimationFrame(() => {
+        try {
+          // 获取所有书签卡片
+          const allCards = document.querySelectorAll('.bookmark-card');
+          let foundMatch = false;
+          
+          // 如果搜索词为空，显示所有卡片
+          if (searchTerm === '') {
+            allCards.forEach(card => {
+              card.style.display = 'flex';
+              card.querySelector('.bookmark-title').innerHTML = card.dataset.title;
+              card.querySelector('.bookmark-desc').innerHTML = card.querySelector('.bookmark-desc').textContent;
+            });
+            
+            document.querySelectorAll('.category-section').forEach(section => {
+              section.style.display = 'block';
+            });
+            
+            if (document.querySelector('.no-results')) {
+              document.querySelector('.no-results').remove();
+            }
+            
+            if (loadingIndicator) loadingIndicator.style.display = 'none';
+            return;
+          }
+          
+          // 遍历所有卡片进行处理
+          allCards.forEach(card => {
+            const title = card.dataset.title.toLowerCase() || '';
+            const desc = card.querySelector('.bookmark-desc').textContent.toLowerCase() || '';
+            
+            // 判断是否匹配搜索词
+            if (title.includes(searchTerm) || desc.includes(searchTerm)) {
+              card.style.display = 'flex';
+              
+              // 高亮匹配的文本
+              const titleEl = card.querySelector('.bookmark-title');
+              const descEl = card.querySelector('.bookmark-desc');
+              
+              // 重置HTML内容
+              titleEl.innerHTML = titleEl.textContent;
+              descEl.innerHTML = descEl.textContent;
+              
+              // 高亮匹配
+              if (title.includes(searchTerm)) {
+                const regex = new RegExp(searchTerm, 'gi');
+                titleEl.innerHTML = titleEl.textContent.replace(regex, 
+                  match => `<span class="highlight">${match}</span>`);
+              }
+              
+              if (desc.includes(searchTerm)) {
+                const regex = new RegExp(searchTerm, 'gi');
+                descEl.innerHTML = descEl.textContent.replace(regex, 
+                  match => `<span class="highlight">${match}</span>`);
+              }
+              
+              foundMatch = true;
+            } else {
+              card.style.display = 'none';
+            }
+          });
+          
+          // 处理分类可见性
+          document.querySelectorAll('.category-section').forEach(section => {
+            const visibleCards = section.querySelectorAll('.bookmark-card[style*="flex"]');
+            section.style.display = visibleCards.length ? 'block' : 'none';
+          });
+          
+          // 显示"无结果"消息（如果没有匹配项）
+          let noResults = document.querySelector('.no-results');
+          if (!foundMatch) {
+            if (!noResults) {
+              noResults = document.createElement('div');
+              noResults.className = 'no-results';
+              noResults.innerHTML = `
+                <i class="fas fa-search" aria-hidden="true"></i>
+                <p>没有找到匹配的书签</p>
+                <p>请尝试其他搜索关键词</p>
+              `;
+              if (bookmarksContainer) bookmarksContainer.appendChild(noResults);
+            }
+          } else {
+            // 如果有匹配项，移除"无结果"消息
+            if (noResults) {
+              noResults.remove();
+            }
+          }
+        } catch (error) {
+          console.error('搜索时出错:', error);
+        } finally {
+          if (loadingIndicator) loadingIndicator.style.display = 'none';
+        }
+      });
+    }
+    
+    // 处理滚动事件
+    function handleScroll() {
+      // 清除之前的计时器
+      if (scrollTimer) {
+        clearTimeout(scrollTimer);
+      }
+      
+      // 显示/隐藏"回到顶部"按钮
+      if (backToTop) {
+        const showButton = window.scrollY > 300;
+        const isHidden = backToTop.classList.contains('hidden');
+        
+        if (showButton) {
+          if (isHidden) {
+            backToTop.classList.remove('hidden');
+            backToTop.style.display = 'flex';
+          }
+        } else {
+          if (!isHidden) {
+            backToTop.classList.add('hidden');
+            
+            // 设置延迟后完全隐藏以允许动画完成
+            scrollTimer = setTimeout(() => {
+              backToTop.style.display = 'none';
+            }, 300);
+          }
+        }
+      }
+      
+      // 高亮当前分类
+      const sections = document.querySelectorAll('.category-section');
+      let currentCategoryId = null;
+      
+      sections.forEach(section => {
+        const rect = section.getBoundingClientRect();
+        if (rect.top <= 100 && rect.bottom >= 100) {
+          currentCategoryId = section.dataset.category;
+        }
+      });
+      
+      // 高亮当前分类按钮
+      if (currentCategoryId) {
+        document.querySelectorAll('.category-btn').forEach(btn => {
+          btn.classList.remove('active');
+          btn.setAttribute('aria-selected', 'false');
+          if (btn.dataset.category === currentCategoryId) {
+            btn.classList.add('active');
+            btn.setAttribute('aria-selected', 'true');
+          }
+        });
+      }
+    }
+    
+    // 滚动到顶部
+    function scrollToTop() {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
+    
+    // 页面加载完成后初始化
+    window.addEventListener('DOMContentLoaded', initPage);
+  </script>
+</body>
+</html>
