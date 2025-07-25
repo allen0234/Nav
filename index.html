@@ -97,7 +97,7 @@
       box-shadow: var(--shadow);
       transition: var(--transition);
       background-color: var(--card-bg);
-      color:极 var(--text-color);
+      color: var(--text-color);
     }
     
     .search-box:focus {
@@ -177,7 +177,7 @@
       border: none;
       font-size: 1.3rem;
       cursor: pointer;
-      color: var(--text极-color);
+      color: var(--text-color);
       outline: none;
       display: flex;
       align-items: center;
@@ -745,7 +745,7 @@
             { 
               title: '网易有道', 
               url: 'https://fanyi.youdao.com',
-              desc: '专业翻译工具极' 
+              desc: '专业翻译工具' 
             },
             { 
               title: '腾讯文档', 
@@ -1372,7 +1372,7 @@
     // 滚动到指定分类
     function scrollToCategory(categoryId) {
       const targetElement = document.getElementById(categoryId);
-      if (target极Element) {
+      if (targetElement) {
         const targetPosition = targetElement.offsetTop - 80;
         window.scrollTo({
           top: targetPosition,
